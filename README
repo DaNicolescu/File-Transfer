@@ -1,0 +1,50 @@
+Nicolescu Daniel-Marian
+324CB
+
+lib.h:
+	Structura mini_kermit contine toate campurile necesare unui pachet
+mini-kermit. Campul data este alocat static, avand dimensiunea 250, maximul
+posibil (len, ce contine dimensiunea pachetului - 2 este char si nu poate fi
+mai mare de 255).
+	Structura send_init_data este folosita in pachetele Send-Init si pentru a
+pastra setarile sender-ului si receiver-ului.
+
+lib.c:
+	create_msg_mini_kermit, folosind parametrii, intoarce o structura msg
+ce are ca payload un pachet mini-kermit. Functia este folosita de catre
+functiile care creeaza un anumit tip de pachet din ksender si kreceiver.
+	get_mini_kermit intoarce o structura mini_kermit dintr-o structura msg
+data ca parametru.
+	check_packet_sum, check_packet_seq, check_packet_type si check_packet_types 
+sunt folosite pentru detectarea erorilor si pentru stabilirea tipului 
+pachetului.
+
+ksender.c:
+	sender_settings intoarce o structura send_init_data folosita la Send-Init
+si pentru a pastra setarile sender-ului.
+	init_packet, file_header_packet, data_packet, eof_packet si eot_packet
+intorc o structura msg ce contine un anumit pachet mini-kermit.
+	transmit transmite mesajul packet_to_send si asteapta ACK pentru el.
+Daca nu primeste raspuns in 5 secunde il retrimite. Trimiterea in caz de 
+timeout se realizeaza de maxim 3 ori. In cazul in care primeste un raspuns 
+corupt sau NAK reseteaza contorul si retrimite mesajul de maxim 3 ori.
+
+kreceiver.c:
+	receiver_settings intoarce o structura send_init_data folosita la Send-Init
+si pentru a pastra setarile receiver-ului.
+	ack_init_packet, ack_packet si nak_packet intorc o structura msg ce contine
+un anumit pachet mini-kermit. ack_init_packet contine si setarile receiver-ului
+in data.
+	receive intoarce mesajul primit de la sender si retrimite ultimul pachet 
+trimis de receiver in caz de timeout (ACK/NAK). In cazul in care receiver nu a
+trimis pachete pana acum, asteapta de maxim 3 * 5s pentru un pachet de la sender.
+Functia e folosita de receive_and_check.
+	receive_and_check intoarce mesajul primit de la sender, precum si ultimul
+pachet trimis de receiver. Functia efectuaza si verificarea pachetului primit.
+Parametrul types contine tipurile de pachet pentru care se efectueaza 
+verificarea.
+
+(P.S: Nu are memory leaks)
+(P.P.S: Pentru un pachet trimis cu seq eu astept un ACK ce are acelasi seq.
+Destul de ambigue raspunsurile de pe forum, nu stiu daca asa trebuia, sau
+trebuia seq+1.)
